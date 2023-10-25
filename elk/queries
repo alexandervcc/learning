@@ -1,0 +1,135 @@
+POST dogs/_doc
+{
+  "name":"manaseses",
+  "age":6,
+  "breed":"wienner"
+}
+
+PUT dogs/_create/1
+{
+  "name":"babas",
+  "age":13,
+  "breed":"german shepherd"
+}
+
+GET dogs/_doc/1
+
+#update only few attributes
+POST dogs/_update/1
+{
+  "doc":{
+    "age":12
+  }
+}
+
+DELETE dogs/_doc/0
+
+#-----------------------------------------------------------------------------------------------------------
+
+# get total number of hits
+GET news_headlines/_search
+{
+  "track_total_hits": true
+}
+
+#Query
+GET news_headlines/_search
+{
+  "query": { 
+    "range": {
+      "date": {
+        "gte": "2021-01-01",
+        "lte": "2021-12-31"
+      }
+    }
+  }
+}
+
+#Aggregation
+GET news_headlines/_search
+{
+  "aggs": {
+    "category_counting": {
+      "terms": {
+        "field": "category",
+        "size": 1000
+      }
+    }
+  }
+}
+
+
+# Query + Aggregation
+GET news_headlines/_search
+{
+  "track_total_hits": true,
+  "query": {
+    "match": {
+      "category": "POLITICS"
+    }
+  },
+  "aggs": {
+    "popular": {
+      "significant_text": {
+        "field": "headline"
+      }
+    }
+  }
+}
+
+# OR by default, add recall
+GET news_headlines/_search
+{
+  "track_total_hits": true,
+  "query": {
+    "match": {
+      "headline":{
+        "query": "Donald Trump Ivanka Trump"
+      }
+    }
+  }
+}
+
+#AND to add precision
+GET news_headlines/_search
+{
+  "track_total_hits": true,
+  "query": {
+    "match": {
+      "headline":{
+        "query": "Donald Trump Ivanka Trump",
+        "operator": "and"
+      }
+    }
+  }
+}
+
+
+# match pharse query: in order next to each other all items
+GET news_headlines/_search
+{
+  "query": {
+    "match_phrase": {
+      "headline": "shape of you"
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
