@@ -1,0 +1,15 @@
+version: '3.9'
+volumes:
+  data:
+services:
+  db:
+    image: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: mariadb
+      MYSQL_DATABASE: test
+      MYSQL_USER: user_mariadb
+      MYSQL_PASSWORD: password_mariadb
+    volumes:
+      - data:/var/lib/mysql
+    ports:
+      - "3306:3306"
