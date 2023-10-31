@@ -116,6 +116,135 @@ GET news_headlines/_search
 }
 
 
+#search for multiple fields match
+GET news_headlines/_search
+{
+  "query": {
+    "multi_match": {
+      "query": "Barack Obama",
+      "fields": [
+        "headline","authors"]
+    }
+  }
+}
+
+#Score boosting
+#Boost the selected field by ^
+GET news_headlines/_search
+{
+  "query": {
+    "multi_match": {
+      "query": "Barack Obama",
+      "fields": [
+        "authors^2",
+        "headline",
+        "short_description"
+        ]
+    }
+  }
+}
+
+
+#run match phrase agains each field
+GET news_headlines/_search
+{
+  "query": {
+    "multi_match": {
+      "query": "Barack Obama",
+      "fields": [
+        "authors",
+        "headline",
+        "short_description"
+        ]
+        , "type": "phrase"
+    }
+  }
+}
+
+#bool query: add multiple conditions
+GET news_headlines/_search
+{
+  "query": {
+    "bool": {
+      
+    }
+  }
+}
+
+
+#MUST
+GET news_headlines/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+        "match_phrase": {
+          "headline": "Michelle Obama"
+         }
+        }
+        ,
+        {
+          "match": {
+            "category": "POLITICS"
+          }
+        }
+      ]
+    }
+  }
+}
+
+
+#Increases the scoring for the hits documents when sorting
+GET news_headlines/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+        "match_phrase": {
+          "headline": "Michelle Obama"
+          }
+         }
+        ],
+       "should":[
+         {
+          "match_phrase": {
+            "category": "BLACK VOICES"
+          }
+        }
+      ]
+    }
+  }
+}
+
+
+#Filter hit documents by yes/no condition
+GET news_headlines/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+        "match_phrase": {
+          "headline": "Michelle Obama"
+          }
+         }
+        ],
+       "filter":{
+          "range":{
+             "date": {
+               "gte": "2014-03-25",
+               "lte": "2016-03-25"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
 
 
 
