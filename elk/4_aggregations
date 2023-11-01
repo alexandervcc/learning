@@ -1,0 +1,311 @@
+//-----------------------------------------------------------------------------------------------------
+//Reindex data
+
+//Create Index definini its mapping
+PUT ecommerce
+{
+  "mappings": {
+    "properties": {
+      "Country": {
+        "type": "keyword"
+      },
+      "CustomerID": {
+        "type": "long"
+      },
+      "Description": {
+        "type": "text"
+      },
+      "InvoiceDate": {
+        "type": "date",
+        "format": "M/d/yyyy H:m"
+      },
+      "InvoiceNo": {
+        "type": "keyword"
+      },
+      "Quantity": {
+        "type": "long"
+      },
+      "StockCode": {
+        "type": "keyword"
+      },
+      "UnitPrice": {
+        "type": "double"
+      }
+    }
+  }
+}
+
+
+//Reindex data from original into create index
+POST _reindex
+{
+  "source": {
+    "index":  "ecommerce_data"
+  },
+  "dest": {
+    "index": "ecommerce"
+  }
+}
+
+
+//Delete rows for a match
+POST ecommerce/_delete_by_query
+{
+  "query": {
+    "range": {
+      "UnitPrice": {
+        "lte": 0
+      }
+    }
+  }
+}
+
+POST ecommerce/_delete_by_query
+{
+  "query": {
+    "range": {
+      "UnitPrice": {
+        "gte": 500
+      }
+    }
+  }
+}
+
+
+
+//-----------------------------------------------------------------------------------------------------
+//Aggregations
+
+//Sum, min, max, avg
+// if using STATS aggregations it will calculate values for: count, min, max, avg, sum
+GET ecommerce/_search
+{
+  //size omits the top 10 hits
+  "size":0,
+  "aggs": {
+    "sum_unit_price": {
+      "sum": {
+        "field": "UnitPrice"
+      }
+    }
+  }
+}
+
+GET ecommerce/_search
+{
+    "size":0,
+  "aggs": {
+    "max_unit_price": {
+      "max": {
+        "field": "UnitPrice"
+      }
+    }
+  }
+}
+
+
+
+//Cardinality: computes uniques values
+GET ecommerce/_search
+{
+    "size":0,
+  "aggs": {
+    "unique_costumers": {
+      "cardinality": {
+        "field": "CustomerID"
+      }
+    }
+  }
+}
+
+
+
+// Query + Aggregation
+GET ecommerce/_search
+{
+    "size":0,
+  
+  "query": {
+    "match": {
+      "Country": "Germany"
+    }
+  },
+  "aggs": {
+    "avg_unit_price": {
+      "avg": {
+        "field": "UnitPrice"
+      }
+    }
+  }
+}
+
+
+
+
+// Bucket aggregations
+//fixed_interval: collect every period of time
+GET ecommerce/_search
+{
+  "size": 0,
+  "aggs": {
+    "transactions_by_8_hrs": {
+      "date_histogram": {
+        "field": "InvoiceDate",
+        "fixed_interval": "8h"
+      }
+    }
+  }
+}
+
+// calendaer_interval: 
+GET ecommerce/_search
+{
+  "size": 0,
+  "aggs": {
+    "transactions_by_month": {
+      "date_histogram": {
+        "field": "InvoiceDate",
+        "calendar_interval": "1M",
+        "order": {
+          "_key": "desc"
+        }
+      }
+    }
+  }
+}
+
+// histogram aggregation based on numerical attribute
+GET ecommerce_data/_search
+{
+  "size": 0,
+  "aggs": {
+    "transactions_per_price_interval": {
+      "histogram": {
+        "field": "UnitPrice",
+        "interval": 10
+      }
+    }
+  }
+}
+
+
+
+// Range Aggregations
+// Create interval or varying sizes
+// This one CAN NOT be sorted
+GET ecommerce/_search
+{
+  "size": 0,
+  "aggs": {
+    "transactions_per_custom_price_ranges": {
+      "range": {
+        "field": "UnitPrice",
+        "ranges": [
+          {
+            "to": 50
+          },
+          {
+            "from": 50,
+            "to": 200
+          },
+          {
+            "from": 200
+          }
+        ]
+      }
+    }
+  }
+}
+
+
+// Terms Aggregation
+// creates a new bucket for every unique term it encounters for the specified field
+GET ecommerce/_search
+{
+  "size": 0,
+  "aggs": {
+    "top_5_customers": {
+      "terms": {
+        "field": "CustomerID",
+        // size defines the top qty to be retrieved
+        "size": 5,
+        "order": {
+          "_count": "asc"
+        }
+      }
+    }
+  }
+}
+
+
+// Combined aggregations
+GET ecommerce/_search
+{
+  "size": 0,
+  "aggs": {
+    "transactions_per_day": {
+      "date_histogram": {
+        "field": "InvoiceDate",
+        "calendar_interval": "day"
+      },
+      "aggs": {
+        "daily_revenue": {
+          "sum": {
+            "script": {
+              "source": "doc['UnitPrice'].value * doc['Quantity'].value"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+GET ecommerce/_search
+{
+  "size": 0,
+  "aggs": {
+    "transactions_per_day": {
+      "date_histogram": {
+        "field": "InvoiceDate",
+        "calendar_interval": "day",
+         "order": {
+          "daily_revenue": "desc"
+        }
+      },
+      "aggs": {
+        "daily_revenue": {
+          "sum": {
+            "script": {
+              "source": "doc['UnitPrice'].value * doc['Quantity'].value"
+            }
+          }
+        },
+        "number_of_unique_customers_per_day": {
+          "cardinality": {
+            "field": "CustomerID"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
