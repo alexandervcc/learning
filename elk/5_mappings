@@ -1,0 +1,140 @@
+//-----------------------------------------------------------------------------------------------------
+
+// Get index mapping schema
+GET ecommerce/_mapping
+
+// Automatic Generated Schema
+{
+    "temp_index" : {
+      "mappings" : {
+        "properties" : {
+          "botanical_name" : {
+            "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
+          },
+          "country_of_origin" : {
+            "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
+          },
+          "date_purchased" : {
+            "type" : "date"
+          },
+          "description" : {
+            "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
+          },
+          "name" : {
+            "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
+          },
+          "produce_type" : {
+            "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
+          },
+          "quantity" : {
+            "type" : "long"
+          },
+          "unit_price" : {
+            "type" : "float"
+          },
+          "vendor_details" : {
+            "properties" : {
+              "main_contact" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                }
+              },
+              "preferred_vendor" : {
+                "type" : "boolean"
+              },
+              "vendor" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                }
+              },
+              "vendor_location" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  
+
+// Strings
+By default, every string gets mapped twice as a text field and as a keyword multi-field. Each field type is primed for different types of requests.
+Text field type is designed for full-text searches.
+Keywordfield type is designed for exact searches, aggregations, and sorting.
+
+
+// Avoid to add an attribute to the mapping:
+"botanical_name": {
+    "enabled": false
+  },
+
+
+// Runtime field
+// Note that the runtime field is not listed under "properties" object which includes the fields in our documents. This is because the runtime field "total" is not indexed!
+PUT produce_v2/_mapping
+{
+  "runtime": {
+    "total": {
+      "type": "double",
+      "script": {
+        "source": "emit(doc['unit_price'].value* doc['quantity'].value)"
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
