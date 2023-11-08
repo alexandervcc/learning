@@ -3,8 +3,8 @@ services:
   nginx:
     container_name: custom_nginx
     build: 
-      context: .
+      context: ./nginx/
     ports:
       - "80:80"
     volumes:
-      - ./html:/usr/share/nginx/html/
+      - ./nginx/html/:/usr/share/nginx/html/
