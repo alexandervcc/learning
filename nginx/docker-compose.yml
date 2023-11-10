@@ -9,6 +9,8 @@ services:
     volumes:
       - ./nginx/html/:/usr/share/nginx/html/
       - ./nginx/conf.d/:/etc/nginx/conf.d/
+    profiles:
+      - main
   
   dns:
     container_name: dns_server
@@ -22,3 +24,5 @@ services:
       - ./dns/named.conf:/etc/bind/named.conf
       - ./dns/zone/:/etc/bind/zone/
     command: named -c /etc/bind/named.conf -g -u named
+    profiles:
+      - dns
