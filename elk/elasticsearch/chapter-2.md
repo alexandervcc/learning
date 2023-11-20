@@ -7,7 +7,7 @@
 - If the index has no schema set prior documents additions, one will be created by default by Elastid. It is done by looking at the JSON attributes and types it holds.
   - Still this is not a good practice, a schema **must** be created before documents are indexed.
 
-## Basic query operations
+### Basic query operations
 
 - Count all documents inside an index, has a path:
   - `GET <index-name>/_count`
@@ -32,7 +32,7 @@
   - Need to use `_search` API
   - `GET <index-name>/_seach`
 
-## Full text search
+### Full text search
 
 - Query to search an string value inside a text attribute. **It uses the inverted index**
 
@@ -75,10 +75,71 @@
         }
     ```
 
-## Load many documents at once
+### Load many documents at once
 
 - Need to use `_bulk` API
 - By default will replace old data with the new one
 
+### Searching across multiple fields
 
-## Searching across multiple fields
+- Requires to use `multi_match` query
+  ```json
+      GET books/_search
+      {
+        "query": {
+          "multi_match": {
+            "query": "Java",
+            "fields": ["title","synopsis"]
+          }
+        }
+      }
+  ```
+- It can select which field would have a higher score through the `boosting factor`. This is addded next to the field with `^<factor>`
+  ```json
+      GET books/_search
+      {
+        "query": {
+          "multi_match": {
+            "query": "Java",
+            "fields": ["title^3","synopsis"]
+          }
+        }
+      }
+  ```
+
+### Search phrases
+
+- To search a long list of words in an specific order use `match_phrase`
+  ```json
+    GET books/_search
+    {
+      "query": {
+        "match_phrase": {
+          "synopsis": "must-have book for every Java programmer"
+        }
+      }
+  ```
+
+### Highlighting Results
+
+- Highlight parts of the queried attribute where the query hit. But it requires an extra object `highlight` at the same level as `query`
+  ```json
+      GET books/_search
+      {
+        "query": {
+          "match_phrase": {
+            "synopsis": "must-have book for every Java programmer"
+          }
+        },
+        "highlight": {
+          "fields": {
+            "synopsis": {}
+          }
+        }
+      }
+  ```
+
+### Phrases with missing words
+
+
+## Term-level Queries
