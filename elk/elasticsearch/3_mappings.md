@@ -210,3 +210,160 @@ GET trainings/_search
   }
 }
 ```
+
+## Advanced data types
+### geo_point
+- represent longitude & latitude
+- you can query an specify square are with these
+```json
+GET restaurants/_search
+{
+  "query": {
+    "geo_bounding_box":{
+      "address":{
+        "top_left":{
+          "lon":"0",
+          "lat":"52"
+        },
+        "bottom_right":{
+          "lon":"1",
+          "lat":"50"
+        }
+      }
+    }
+  }
+}
+```
+
+### object
+- object wrapped inside objects
+- this object is not limited to a single doc, it can contains multiple docs as an array of docs
+```json
+// Create mapping
+PUT emails
+{
+  "mappings": {
+    "properties": {
+      "attachments":{
+        "properties": {
+          "filename":{
+            "type":"text"
+          },
+          "filetype":{
+            "type":"text"
+          }
+        }
+      }
+    }
+  }
+}
+
+// Query inner object value
+GET emails/_search
+{
+  "query": {
+    "term": {
+      "attachments.filename.keyword": "file1.txt"
+    }
+  }
+}
+```
+- a limitation is that matching a single doc inside the object attribute, through different conditions might not be accurate. As the conditions can not check a single doc inside the array, but all docs inside the array.
+- this issue is because values are stored as a flat array
+```json
+{
+  "attachments.filename" :["file1.txt","file2.txt","file3.txt"],
+  "attachments.filetype":["private","confidential"]
+}
+```
+
+### nested
+- similar to object type, but the relationship between the array of objects is mantained.
+- individual objects are stored and indexed as a hidden document
+```json
+PUT emails_nested
+{
+  "mappings": {
+    "properties": {
+      "attachments": {
+        "type": "nested", 
+        "properties": {
+          "filename": {
+            "type": "keyword"
+          },
+          "filetype": {
+            "type": "text" 
+          }
+        }
+      }
+    }
+  }
+}
+```
+### flattened
+- sometimes it is not required to analyze & index all attributes as this is an expensive process
+- any field and its subfields will not be analyzed and will be stored as `keyword`
+- allow to introduce nested fields without the need of an explicit mapping
+```json
+PUT consultations
+{
+  "mappings": {
+    "properties": {
+      "doctor_notes":{ #A
+        "type": "flattened" #B
+      }
+    }
+  }
+}
+```
+#### join
+- by default elastic does not keep track of relations (think of datababase) between docs
+- this type allow to consider parent-child relationships
+- when indexing the attribute must contain a `name` field of the relationship to be assigned
+- The parents and the associated children will be indexed into the same shard to avoid the multi-shard search overheads.
+```json
+// Create the schema mapping
+PUT doctors
+{
+  "mappings": {
+    "properties": {
+      "relationship":{ 
+        "type": "join",
+        "relations":{
+          "doctor":"patient"
+        }
+      }
+    }
+  }
+}
+
+// Index a parent doc
+PUT doctors/_doc/1
+{
+  "name":"Dr Mary Montgomery",
+  "relationship":{
+    "name":"doctor" 
+  }
+}
+
+// Index a child doc
+PUT doctors/_doc/2?routing=mary #A
+{
+  "name":"John Doe",
+  "relationship":{ 
+    "name":"patient",
+    "parent":1 
+  }
+}
+
+// Fetch patients of a doctor
+GET doctors/_search
+{
+  "query": {
+    "parent_id":{
+      "type":"patient",
+      "id":1
+    }
+  }
+}
+```
