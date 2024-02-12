@@ -71,10 +71,221 @@ PUT movies/_settings
 We can also control the refresh operation from the client side for CRUD operations on documents by setting the refresh query parameter. The document APIs (index, delete, update, and _bulk) expect refresh as a query parameter.
 
 ## Retrieving documents
+### Single doc API
+- Needs to indicate the doc id to fetch
+- This query returns 200 - OK if the document exists. If the document is unavailable in the store, a 404 Not Found error is returned
+```json
+GET <index_name>/_doc/<id>
+```
+
+### Multiple doc API
+`_mget` API will work for retrieving multiple documents:
+```json
+// single index
+GET movies/_mget
+{
+  "ids" : ["1", "12", "19", "34"]
+}
+
+// multiple index
+GET _mget #A
+{
+  "docs":[
+   {
+     "_index":"classic_movies", 
+     "_id":11
+   },
+   {
+     "_index":"international_movies", 
+     "_id":22
+   }
+  ]
+}
+```
+Other option is to use the `_search` API with multiple index
+```json
+GET classic_movies,international_movies/_search 
+{ 
+  # body
+}
+```
 
 
+### Ids query
+```json
+GET classic_movies/_search
+{
+  "query": {
+    "ids": {
+      "values": [1,2,3,4]
+    }
+  }
+}
+```
+
+## Manipulate results
+- Omit/include metada
+```json
+GET <index_name>/_source/<id>
+```
+- Include/exclude body of doc
+```json
+GET movies/_doc/1?_source=false
+```
+- Include/exclude doc attributes
+```json
+GET movies/_source/3?_source_includes=title,rating,genre
+
+GET movies/_source/3?_source_excludes=actors,synopsis
+```
+
+## Update documents
+There is two endpoints for this: `_update` & `_update_by_query` 
+
+### Update mechanism
+Process is composed of three parts:
+1. Fetch the document
+2. Modify the document
+3. **Re-index** the updated document
+
+When an update takes place elastic increments the value of `version` for the document. When the new version is ready, the old one gets marked for deletion.
+
+### _update
+`POST <index_name>/_doc/<id>/_update`
+```json
+POST movies/_update/1
+{
+  "doc": {
+    "title":"The Godfather (Original)"
+  }
+}
+```
+#### Script update
+- Scripted updates allow us to update the document based on some conditions
+- Provide the updates as a value to this source key with the help of a context variable ctx - which is used to fetch the original document’s attributes by calling ctx._source.<field>.
+```json
+// add a new element to a list
+POST movies/_update/1
+{
+  "script": {
+   "source": "ctx._source.actors.add('Diane Keaton')" #A
+  }
+}
+
+// remove a field from an array
+{
+ "script":{
+   "source":
+     "ctx._source.actors.remove(ctx._source.actors.indexOf('Diane Keaton'))"
+  }
+}
+
+// add a field
+POST movies/_update/1
+{
+  "script": {
+    "source": "ctx._source.imdb_user_rating = 9.2"
+  }
+}
+
+// remove a field
+POST movies/_update/1
+{
+  "script": {
+    "source": "ctx._source.remove('metacritic_rating')"
+  }
+}
+
+// conditionals
+POST movies/_update/1
+{
+  "script": {
+    "source": """
+    if(ctx._source.boxoffice_gross_in_millions > 125) 
+      {ctx._source.blockbuster = true} 
+     else 
+      {ctx._source.blockbuster = false}
+    """
+  }
+}
+```
+
+### Upsert
+- Checks if a document exists, if so it will be updated, otherwise it will be created with the `update` block content.
+- if the doc **does not** exists, the script update will not be executed
+```json
+POST movies/_update/5
+{
+  "script": {
+    "source": "ctx._source.gross_earnings = '357.1m'"
+  },
+  "upsert": {
+    "title":"Top Gun",
+    "gross_earnings":"357.5m"
+  }
+}
+```
+
+### _update_by_query
+- mechanism to update tons of documents based on a criteri
+```json
+POST movies/_update_by_query #A
+{
+  "query": {
+    "match": {
+      "actors": "Al Pacino"
+    }
+  },
+  "script": {
+    "source": """ctx._source.actors.add('Oscar Winner Al Pacino');""",
+    "lang": "painless"
+  }
+}
+```
+
+## Delete Documents
+`DELETE <index_name>/_doc/<id>`
+- Delete a single document by `_id`
+
+- Delete many documents through a matching criteria
+```json
+POST movies/_delete_by_query
+{
+  "query":{
+    "match":{
+      "director":"James Cameron"
+    }
+  }
+}
+```
+
+## Bulk
+- Used to index large datasets simultaneosly, and not only limited to indexing
+- Is not limited to a single index, not a single operation
 
 
+```json
+// create a doc into an specific index
+POST movies/_bulk
+{"index":{"_id":"100"}}
+{"title": "Mission Impossible"}
+
+// bulk through index for each doc
+POST _bulk
+{"update":{"_index":"movies","_id":"200"}}
+{"doc": {"director":"Brett Ratner"}}
+```
+
+## Reindex documents
+- need to migrate an older index to a newer one due to changes in our mapping schema or settings
+- use the `_reindex` API for this
+```json
+POST _reindex
+{
+  "source": {"index": "<source_index>"},
+  "dest": {"index": "<destination_index>"}
+}
+```
 
 
 
