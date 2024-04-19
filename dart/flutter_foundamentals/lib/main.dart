@@ -3,8 +3,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_foundamentals/firebase_options.dart';
 import 'package:flutter_foundamentals/views/login_view.dart';
+import 'package:flutter_foundamentals/views/notes_view.dart';
 import 'package:flutter_foundamentals/views/register_view.dart';
 import 'package:flutter_foundamentals/views/verify_email.dart';
+// import only log from the package and use an alias
+import 'dart:developer' as devtools show log;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,9 +26,7 @@ void main() {
   ));
 }
 
-/**
- * Stateless widget to initialize Firebase Auth
- */
+/// Stateless widget to initialize Firebase Auth
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -39,15 +40,19 @@ class HomePage extends StatelessWidget {
             case ConnectionState.done:
               final currentUser = FirebaseAuth.instance.currentUser;
               if (currentUser == null) {
+                devtools.log('No user yet, showing Log-In view');
                 return const LoginView();
               }
 
               final isUserVerified = currentUser.emailVerified;
               if (!isUserVerified) {
+                devtools.log(
+                    'User still needs verification, showing Email Verification view');
                 return const VerifyEmailView();
               }
               // main application page
-              return const LoginView();
+              devtools.log('User set, accessing to main app');
+              return const NotesView();
             default:
               return const CircularProgressIndicator();
           }
