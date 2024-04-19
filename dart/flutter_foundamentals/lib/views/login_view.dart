@@ -1,5 +1,7 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_foundamentals/constants/routes.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -58,12 +60,14 @@ class _LoginViewState extends State<LoginView> {
                 final email = _email.text;
                 final password = _password.text;
                 try {
-                  final credLogIn = await FirebaseAuth.instance
-                      .signInWithEmailAndPassword(
-                          email: email, password: password);
-                  print("res: " + credLogIn.toString());
+                  await FirebaseAuth.instance.signInWithEmailAndPassword(
+                    email: email,
+                    password: password,
+                  );
+                  Navigator.of(context)
+                      .pushNamedAndRemoveUntil(homeRoute, (route) => false);
                 } on FirebaseAuthException catch (e) {
-                  print("LogIn error: " + e.code);
+                  log("Error authenticating user: $e");
                 }
               },
               child: const Text("Log In"),
@@ -72,7 +76,7 @@ class _LoginViewState extends State<LoginView> {
                 onPressed: () {
                   // Navigator: with named route
                   Navigator.of(context)
-                      .pushNamedAndRemoveUntil("/sign-up/", (route) => false);
+                      .pushNamedAndRemoveUntil(signupRoute, (route) => false);
                 },
                 child: const Text("Sign-Up here"))
           ],

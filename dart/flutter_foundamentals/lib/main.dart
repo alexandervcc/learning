@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_foundamentals/constants/routes.dart';
 import 'package:flutter_foundamentals/firebase_options.dart';
 import 'package:flutter_foundamentals/views/login_view.dart';
 import 'package:flutter_foundamentals/views/notes_view.dart';
@@ -20,8 +21,9 @@ void main() {
     home: const HomePage(),
     // create named routes
     routes: {
-      "/log-in/": (context) => const LoginView(),
-      "/sign-up/": (context) => const RegisterView()
+      loginRoute: (context) => const LoginView(),
+      signupRoute: (context) => const RegisterView(),
+      homeRoute: (context) => const NotesView()
     },
   ));
 }
