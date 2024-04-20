@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_foundamentals/constants/routes.dart';
+import 'package:flutter_foundamentals/utils/show_error_dialog.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -60,14 +63,24 @@ class _RegisterViewState extends State<RegisterView> {
                 final email = _email.text;
                 final password = _password.text;
                 try {
-                  final userCredential = await FirebaseAuth.instance
-                      .createUserWithEmailAndPassword(
-                          email: email, password: password);
-                  print(userCredential);
+                  await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                    email: email,
+                    password: password,
+                  );
+                  User? user = FirebaseAuth.instance.currentUser;
+                  await user?.sendEmailVerification();
+                  Navigator.of(context).pushNamed(verifyEmailRoute);
                 } on FirebaseAuthException catch (e) {
+                  log("Error creating user: $e");
                   if (e.code == 'weak-password') {
+                    await showErrorDialog(
+                        context, "Weak password, use a new one");
                   } else if (e.code == 'email-already-in-use') {
-                  } else if (e.code == "") {}
+                    await showErrorDialog(
+                        context, "Email you provided cannot be used");
+                  } else {
+                    await showErrorDialog(context, "Error: ${e.code}");
+                  }
                 }
               },
               child: const Text("Register"),
@@ -77,7 +90,7 @@ class _RegisterViewState extends State<RegisterView> {
                   Navigator.of(context)
                       .pushNamedAndRemoveUntil(loginRoute, (route) => false);
                 },
-                child: Text("Go to Log-in"))
+                child: const Text("Go to Log-in"))
           ],
         ));
   }
