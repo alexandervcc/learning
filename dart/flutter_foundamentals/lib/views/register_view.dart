@@ -1,8 +1,7 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_foundamentals/constants/routes.dart';
+import 'package:flutter_foundamentals/services/auth/auth_exception.dart';
+import 'package:flutter_foundamentals/services/auth/auth_service.dart';
 import 'package:flutter_foundamentals/utils/show_error_dialog.dart';
 
 class RegisterView extends StatefulWidget {
@@ -63,24 +62,20 @@ class _RegisterViewState extends State<RegisterView> {
                 final email = _email.text;
                 final password = _password.text;
                 try {
-                  await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                  await AuthService.firebase().createUser(
                     email: email,
                     password: password,
                   );
-                  User? user = FirebaseAuth.instance.currentUser;
-                  await user?.sendEmailVerification();
+                  await AuthService.firebase().sendEmailVerification();
                   Navigator.of(context).pushNamed(verifyEmailRoute);
-                } on FirebaseAuthException catch (e) {
-                  log("Error creating user: $e");
-                  if (e.code == 'weak-password') {
-                    await showErrorDialog(
-                        context, "Weak password, use a new one");
-                  } else if (e.code == 'email-already-in-use') {
-                    await showErrorDialog(
-                        context, "Email you provided cannot be used");
-                  } else {
-                    await showErrorDialog(context, "Error: ${e.code}");
-                  }
+                } on WeakPasswordException catch (_) {
+                  await showErrorDialog(
+                      context, "Weak password, use a new one");
+                } on EmailInUseException catch (_) {
+                  await showErrorDialog(
+                      context, "Email you provided cannot be used");
+                } on GenericAuthException catch (e) {
+                  await showErrorDialog(context, "Error: $e");
                 }
               },
               child: const Text("Register"),
