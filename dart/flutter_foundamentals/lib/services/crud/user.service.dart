@@ -28,6 +28,18 @@ class DatabaseUser {
 }
 
 class UserService extends DatabaseConnectionService {
+  Future<DatabaseUser> getOrCreateUser({required String email}) async {
+    DatabaseUser user;
+    try {
+      user = await getUser(email: email);
+    } on UserNotFoundException catch (_) {
+      user = await createUser(email: email);
+    } catch (e) {
+      rethrow;
+    }
+    return user;
+  }
+
   Future<void> deleteUser({required String email}) async {
     final db = getDatabaseOrThrow();
     final deleteCount = await db.delete(

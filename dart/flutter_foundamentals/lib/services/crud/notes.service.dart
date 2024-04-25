@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter_foundamentals/services/auth/auth_exception.dart";
 import "package:flutter_foundamentals/services/crud/db.service.dart";
 import "package:flutter_foundamentals/services/crud/exceptions.dart";
@@ -5,8 +7,21 @@ import "package:flutter_foundamentals/services/crud/user.service.dart";
 
 class NotesService extends DatabaseConnectionService {
   final UserService _userService;
+  List<DatabaseNote> _notes = [];
+  final _streamController = StreamController<List<DatabaseNote>>.broadcast();
 
   NotesService(this._userService);
+
+  Future<void> _cacheNotes() async {
+    final allNotes = await getAllNotes();
+    _notes = allNotes.toList();
+    _streamController.add(_notes);
+  }
+
+  Future<void> openDbConnection() async {
+    await open();
+    await _cacheNotes();
+  }
 
   Future<DatabaseNote> updateNote({
     required DatabaseNote note,
@@ -28,10 +43,14 @@ class NotesService extends DatabaseConnectionService {
 
     if (updatesCount == 0) {
       throw CouldNotUpdateNoteException();
-    } else {
-      final updatedNote = await getNote(id: note.id);
-      return updatedNote;
     }
+
+    final updatedNote = await getNote(id: note.id);
+    _notes.removeWhere((element) => element.id == updatedNote.id);
+    _notes.add(note);
+    _streamController.add(_notes);
+
+    return updatedNote;
   }
 
   Future<Iterable<DatabaseNote>> getAllNotes() async {
@@ -52,15 +71,25 @@ class NotesService extends DatabaseConnectionService {
 
     if (notes.isEmpty) {
       throw CouldNotFindNoteException();
-    } else {
-      final note = DatabaseNote.fromRow(notes.first);
-      return note;
     }
+
+    final note = DatabaseNote.fromRow(notes.first);
+
+    _notes.removeWhere((element) => element.id == note.id);
+    _notes.add(note);
+    _streamController.add(_notes);
+
+    return note;
   }
 
   Future<int> deleteAllNotes() async {
     final db = getDatabaseOrThrow();
     final numberOfDeletions = await db.delete(noteTable);
+
+    // stream update
+    _notes = [];
+    _streamController.add(_notes);
+
     return numberOfDeletions;
   }
 
@@ -74,6 +103,10 @@ class NotesService extends DatabaseConnectionService {
     if (deletedCount == 0) {
       throw CouldNotDeleteNoteException();
     }
+
+    // stream update
+    _notes.removeWhere((element) => element.id == id);
+    _streamController.add(_notes);
   }
 
   Future<DatabaseNote> createNote({required DatabaseUser owner}) async {
@@ -97,6 +130,10 @@ class NotesService extends DatabaseConnectionService {
       text: text,
       isCloudSynced: true,
     );
+
+    // update stream
+    _notes.add(note);
+    _streamController.add(_notes);
 
     return note;
   }
