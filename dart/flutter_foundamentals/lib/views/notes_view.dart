@@ -22,7 +22,7 @@ class _NotesViewState extends State<NotesView> {
   @override
   void initState() {
     _userService = UserService();
-    _noteService = NotesService(_userService);
+    _noteService = NotesService();
     super.initState();
   }
 
@@ -39,6 +39,11 @@ class _NotesViewState extends State<NotesView> {
           title: const Text("My notes"),
           // Options for a menu on the top bar
           actions: [
+            IconButton(
+                onPressed: () {
+                  Navigator.of(context).pushNamed(newNoteRoute);
+                },
+                icon: const Icon(Icons.add)),
             PopupMenuButton<MainMenuAction>(
                 onSelected: (value) async {
                   log("Selected menu item: ${value.name} ");
@@ -51,11 +56,16 @@ class _NotesViewState extends State<NotesView> {
                         Navigator.of(context).pushNamedAndRemoveUntil(
                             loginRoute, (route) => false);
                       }
+                    case MainMenuAction.newNote:
+                      Navigator.of(context).pushNamed(newNoteRoute);
                   }
                 },
                 itemBuilder: (context) => [
                       const PopupMenuItem<MainMenuAction>(
-                          value: MainMenuAction.logout, child: Text("Log-Out"))
+                          value: MainMenuAction.newNote,
+                          child: Text("New Note")),
+                      const PopupMenuItem<MainMenuAction>(
+                          value: MainMenuAction.logout, child: Text("Log-Out")),
                     ])
           ],
         ),
@@ -76,7 +86,7 @@ class _NotesViewState extends State<NotesView> {
                             ConnectionState.waiting) {
                           return const Text("STREAM: waiting all notes");
                         }
-                        return const   CircularProgressIndicator();
+                        return const CircularProgressIndicator();
                       });
 
                 default:

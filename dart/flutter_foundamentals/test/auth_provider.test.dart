@@ -92,7 +92,7 @@ class MockAuthProvider implements AuthProvider {
       throw InvalidCredentialsException();
     }
 
-    _authUser = const AuthUser(false);
+    _authUser = const AuthUser(isEmailVerified: false, email: "test@gmail.com");
     return Future.value(_authUser);
   }
 
@@ -116,7 +116,7 @@ class MockAuthProvider implements AuthProvider {
     if (_authUser == null) {
       throw UserNotFoundException();
     }
-    const newUser = AuthUser(true);
+    const newUser = AuthUser(isEmailVerified: true, email: "test@gmail.com");
     _authUser = newUser;
   }
 }
