@@ -6,6 +6,12 @@ import "package:path/path.dart";
 abstract class DatabaseConnectionService {
   Database? _db;
 
+  Future<void> ensureDbIsOpen() async {
+    try {
+      await open();
+    } on DatabaseAlreadyOpenException catch (_) {}
+  }
+
   Database getDatabaseOrThrow() {
     final db = _db;
     if (db == null) {

@@ -28,7 +28,16 @@ class DatabaseUser {
 }
 
 class UserService extends DatabaseConnectionService {
+  UserService._privateConstructor();
+
+  static final UserService _instance = UserService._privateConstructor();
+
+  factory UserService() {
+    return _instance;
+  }
+
   Future<DatabaseUser> getOrCreateUser({required String email}) async {
+    await ensureDbIsOpen();
     DatabaseUser user;
     try {
       user = await getUser(email: email);
@@ -41,6 +50,8 @@ class UserService extends DatabaseConnectionService {
   }
 
   Future<void> deleteUser({required String email}) async {
+    await ensureDbIsOpen();
+
     final db = getDatabaseOrThrow();
     final deleteCount = await db.delete(
       userTable,
@@ -55,6 +66,8 @@ class UserService extends DatabaseConnectionService {
   Future<DatabaseUser> createUser({
     required String email,
   }) async {
+    await ensureDbIsOpen();
+
     final db = getDatabaseOrThrow();
     final foundUser = await db.query(userTable,
         limit: 1, where: "email = ?", whereArgs: [email.toString()]);
@@ -69,6 +82,8 @@ class UserService extends DatabaseConnectionService {
   Future<DatabaseUser> getUser({
     required String email,
   }) async {
+    await ensureDbIsOpen();
+
     final db = getDatabaseOrThrow();
     final foundUser = await db.query(userTable,
         limit: 1, where: "email = ?", whereArgs: [email.toString()]);

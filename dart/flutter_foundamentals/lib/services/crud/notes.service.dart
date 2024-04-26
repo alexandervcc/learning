@@ -9,8 +9,14 @@ class NotesService extends DatabaseConnectionService {
   final UserService _userService;
   List<DatabaseNote> _notes = [];
   final _streamController = StreamController<List<DatabaseNote>>.broadcast();
+  Stream<List<DatabaseNote>> get allNotes => _streamController.stream;
 
-  NotesService(this._userService);
+  NotesService._privateConstructor(this._userService);
+
+  static final NotesService _instance =
+      NotesService._privateConstructor(UserService());
+
+  factory NotesService() => _instance;
 
   Future<void> _cacheNotes() async {
     final allNotes = await getAllNotes();
@@ -27,6 +33,7 @@ class NotesService extends DatabaseConnectionService {
     required DatabaseNote note,
     required String text,
   }) async {
+    await ensureDbIsOpen();
     final db = getDatabaseOrThrow();
 
     await getNote(id: note.id);
@@ -54,6 +61,7 @@ class NotesService extends DatabaseConnectionService {
   }
 
   Future<Iterable<DatabaseNote>> getAllNotes() async {
+    await ensureDbIsOpen();
     final db = getDatabaseOrThrow();
     final notes = await db.query(noteTable);
 
@@ -61,6 +69,7 @@ class NotesService extends DatabaseConnectionService {
   }
 
   Future<DatabaseNote> getNote({required int id}) async {
+    await ensureDbIsOpen();
     final db = getDatabaseOrThrow();
     final notes = await db.query(
       noteTable,
@@ -83,6 +92,7 @@ class NotesService extends DatabaseConnectionService {
   }
 
   Future<int> deleteAllNotes() async {
+    await ensureDbIsOpen();
     final db = getDatabaseOrThrow();
     final numberOfDeletions = await db.delete(noteTable);
 
@@ -94,6 +104,7 @@ class NotesService extends DatabaseConnectionService {
   }
 
   Future<void> deleteNote({required int id}) async {
+    await ensureDbIsOpen();
     final db = getDatabaseOrThrow();
     final deletedCount = await db.delete(
       noteTable,
@@ -110,6 +121,7 @@ class NotesService extends DatabaseConnectionService {
   }
 
   Future<DatabaseNote> createNote({required DatabaseUser owner}) async {
+    await ensureDbIsOpen();
     final db = getDatabaseOrThrow();
 
     final dbUser = await _userService.getUser(email: owner.email);
