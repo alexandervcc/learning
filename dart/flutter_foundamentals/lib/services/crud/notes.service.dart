@@ -8,10 +8,15 @@ import "package:flutter_foundamentals/services/crud/user.service.dart";
 class NotesService extends DatabaseConnectionService {
   final UserService _userService;
   List<DatabaseNote> _notes = [];
-  final _streamController = StreamController<List<DatabaseNote>>.broadcast();
+  late final StreamController<List<DatabaseNote>> _streamController;
   Stream<List<DatabaseNote>> get allNotes => _streamController.stream;
 
-  NotesService._privateConstructor(this._userService);
+  NotesService._privateConstructor(this._userService) {
+    _streamController =
+        StreamController<List<DatabaseNote>>.broadcast(onListen: () {
+      _streamController.sink.add(_notes);
+    });
+  }
 
   static final NotesService _instance =
       NotesService._privateConstructor(UserService());
@@ -54,7 +59,7 @@ class NotesService extends DatabaseConnectionService {
 
     final updatedNote = await getNote(id: note.id);
     _notes.removeWhere((element) => element.id == updatedNote.id);
-    _notes.add(note);
+    _notes.add(updatedNote);
     _streamController.add(_notes);
 
     return updatedNote;

@@ -53,7 +53,7 @@ const userTable = "user";
 const noteTable = "note";
 
 const createNotesTable = '''
-        CREATE TABLE "note" (
+        CREATE TABLE IF NOT EXISTS "note" (
           "id"	INTEGER NOT NULL,
           "user_id"	INTEGER NOT NULL,
           "text"	TEXT,
@@ -64,7 +64,7 @@ const createNotesTable = '''
       ''';
 
 const createUserTable = '''
-        CREATE TABLE "user" IF NOT EXISTS (
+        CREATE TABLE IF NOT EXISTS "user" (
           "id"	INTEGER NOT NULL,
           "email"	TEXT NOT NULL UNIQUE,
           PRIMARY KEY("id" AUTOINCREMENT)

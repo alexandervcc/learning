@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_foundamentals/constants/routes.dart';
 import 'package:flutter_foundamentals/enum/main_menu_action.dart';
-import 'dart:developer' show log;
 
 import 'package:flutter_foundamentals/services/auth/auth_service.dart';
 import 'package:flutter_foundamentals/services/crud/notes.service.dart';
@@ -27,12 +26,6 @@ class _NotesViewState extends State<NotesView> {
   }
 
   @override
-  void dispose() {
-    _noteService.close();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
@@ -46,11 +39,9 @@ class _NotesViewState extends State<NotesView> {
                 icon: const Icon(Icons.add)),
             PopupMenuButton<MainMenuAction>(
                 onSelected: (value) async {
-                  log("Selected menu item: ${value.name} ");
                   switch (value) {
                     case MainMenuAction.logout:
                       final shouldLogOut = await showLogOutDialog(context);
-                      log("User should be logged out: $shouldLogOut");
                       if (shouldLogOut) {
                         await AuthService.firebase().logOut();
                         Navigator.of(context).pushNamedAndRemoveUntil(
@@ -76,7 +67,7 @@ class _NotesViewState extends State<NotesView> {
                 case ConnectionState.none:
                 case ConnectionState.active:
                 case ConnectionState.waiting:
-                // TODO: Handle this case.
+                  return const Text("getOrCreateUser::none/active/waiting");
 
                 case ConnectionState.done:
                   return StreamBuilder(
@@ -84,14 +75,38 @@ class _NotesViewState extends State<NotesView> {
                       builder: (context, snapshot) {
                         switch (snapshot.connectionState) {
                           case ConnectionState.none:
-                          // TODO: Handle this case.
+                            return const Text("builder::switch::none");
 
                           case ConnectionState.waiting:
                           case ConnectionState.active:
-                            return const Text("STREAM: waiting all notes");
+                            if (snapshot.hasData) {
+                              final dataNotes =
+                                  snapshot.data as List<DatabaseNote>;
+
+                              if (dataNotes.isEmpty) {
+                                return const Text("No notes to show yet.");
+                              }
+
+                              return ListView.builder(
+                                itemCount: dataNotes.length,
+                                itemBuilder: (context, index) {
+                                  final noteItem = dataNotes[index];
+                                  return ListTile(
+                                    title: Text(
+                                      "${noteItem.text}",
+                                      maxLines: 1,
+                                      softWrap: true,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  );
+                                },
+                              );
+                            } else {
+                              return const Text("No notes to show");
+                            }
 
                           case ConnectionState.done:
-                          // TODO: Handle this case.
+                            return const Text("builder::switch::done");
                           default:
                             return const CircularProgressIndicator();
                         }
@@ -110,17 +125,15 @@ Future<bool> showLogOutDialog(BuildContext context) {
       builder: (context) {
         return AlertDialog(
           title: const Text("Log Out"),
-          content: const Text("Are you sure you want to log out?"),
+          content: const Text("Are you sure you want to //log out?"),
           actions: [
             TextButton(
                 onPressed: () {
-                  log("User did not log out");
                   Navigator.of(context).pop(false);
                 },
                 child: const Text("Cancel")),
             TextButton(
                 onPressed: () {
-                  log("User logged out");
                   Navigator.of(context).pop(true);
                 },
                 child: const Text("Log-Out")),

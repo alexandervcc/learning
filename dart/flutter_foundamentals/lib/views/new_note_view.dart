@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_foundamentals/services/auth/auth_service.dart';
 import 'package:flutter_foundamentals/services/crud/notes.service.dart';
@@ -26,6 +28,7 @@ class _NewNoteViewState extends State<NewNoteView> {
 
   @override
   void dispose() {
+    log("new_note::dispose");
     _deleteNoteIfTextIsEmpty();
     _saveNoteIfTextIsNotEmpty();
     _textController.dispose();
@@ -44,9 +47,9 @@ class _NewNoteViewState extends State<NewNoteView> {
     );
   }
 
-  void _setUpTextControllerListener() async {
-    _textController.removeListener(_textControllerListener);
-    _textController.addListener(_textControllerListener);
+  void _setUpTextControllerListener() {
+    //_textController.removeListener(_textControllerListener);
+    //_textController.addListener(_textControllerListener);
   }
 
   void _deleteNoteIfTextIsEmpty() async {
