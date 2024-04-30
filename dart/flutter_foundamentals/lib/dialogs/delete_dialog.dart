@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_foundamentals/utils/generic_dialog.dart';
+import 'package:flutter_foundamentals/dialogs/generic_dialog.dart';
 
 Future<bool> showDeleteDialog(BuildContext context) {
   return showGenericDialog<bool>(

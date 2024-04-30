@@ -7,7 +7,7 @@ import 'package:flutter_foundamentals/enum/main_menu_action.dart';
 import 'package:flutter_foundamentals/services/auth/auth_service.dart';
 import 'package:flutter_foundamentals/services/crud/notes.service.dart';
 import 'package:flutter_foundamentals/services/crud/user.service.dart';
-import 'package:flutter_foundamentals/utils/logout_dialog.dart';
+import 'package:flutter_foundamentals/dialogs/logout_dialog.dart';
 import 'package:flutter_foundamentals/views/notes_list_view.dart';
 
 class NotesView extends StatefulWidget {
@@ -38,7 +38,7 @@ class _NotesViewState extends State<NotesView> {
           actions: [
             IconButton(
                 onPressed: () {
-                  Navigator.of(context).pushNamed(newNoteRoute);
+                  Navigator.of(context).pushNamed(cuNoteRoute);
                 },
                 icon: const Icon(Icons.add)),
             PopupMenuButton<MainMenuAction>(
@@ -53,7 +53,7 @@ class _NotesViewState extends State<NotesView> {
                             loginRoute, (route) => false);
                       }
                     case MainMenuAction.newNote:
-                      Navigator.of(context).pushNamed(newNoteRoute);
+                      Navigator.of(context).pushNamed(cuNoteRoute);
                   }
                 },
                 itemBuilder: (context) => [
@@ -93,10 +93,17 @@ class _NotesViewState extends State<NotesView> {
                               }
 
                               return NotesListView(
-                                  notes: dataNotes,
-                                  onDeleteNote: (note) async {
-                                    await _noteService.deleteNote(id: note.id);
-                                  });
+                                notes: dataNotes,
+                                onDeleteNote: (note) async {
+                                  await _noteService.deleteNote(id: note.id);
+                                },
+                                onTap: (note) {
+                                  Navigator.of(context).pushNamed(
+                                    cuNoteRoute,
+                                    arguments: note,
+                                  );
+                                },
+                              );
                             } else {
                               return const Text("No notes to show");
                             }

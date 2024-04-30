@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_foundamentals/utils/generic_dialog.dart';
+import 'package:flutter_foundamentals/dialogs/generic_dialog.dart';
 
 const logOutTitle = "Log Out";
 const logOutContent = "Are you sure you want to log out?";
