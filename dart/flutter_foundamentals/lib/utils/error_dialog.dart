@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_foundamentals/utils/generic_dialog.dart';
 
+/// Old error dialog
+@Deprecated('Use [genericErrorDialog]')
 Future<void> showErrorDialog(BuildContext context, String text) {
   return showDialog(
     context: context,
@@ -17,4 +20,12 @@ Future<void> showErrorDialog(BuildContext context, String text) {
       );
     },
   );
+}
+
+Future<void> showGenericErrorDialog(BuildContext context, String text) {
+  return showGenericDialog<void>(
+      context: context,
+      title: "An error occurred",
+      content: text,
+      optionBuilder: () => {'OK': null});
 }

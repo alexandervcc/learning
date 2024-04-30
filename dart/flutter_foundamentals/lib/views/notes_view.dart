@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_foundamentals/constants/routes.dart';
 import 'package:flutter_foundamentals/enum/main_menu_action.dart';
@@ -5,6 +7,8 @@ import 'package:flutter_foundamentals/enum/main_menu_action.dart';
 import 'package:flutter_foundamentals/services/auth/auth_service.dart';
 import 'package:flutter_foundamentals/services/crud/notes.service.dart';
 import 'package:flutter_foundamentals/services/crud/user.service.dart';
+import 'package:flutter_foundamentals/utils/logout_dialog.dart';
+import 'package:flutter_foundamentals/views/notes_list_view.dart';
 
 class NotesView extends StatefulWidget {
   const NotesView({super.key});
@@ -41,7 +45,8 @@ class _NotesViewState extends State<NotesView> {
                 onSelected: (value) async {
                   switch (value) {
                     case MainMenuAction.logout:
-                      final shouldLogOut = await showLogOutDialog(context);
+                      final shouldLogOut =
+                          await showGenericLogoutDialog(context);
                       if (shouldLogOut) {
                         await AuthService.firebase().logOut();
                         Navigator.of(context).pushNamedAndRemoveUntil(
@@ -87,20 +92,11 @@ class _NotesViewState extends State<NotesView> {
                                 return const Text("No notes to show yet.");
                               }
 
-                              return ListView.builder(
-                                itemCount: dataNotes.length,
-                                itemBuilder: (context, index) {
-                                  final noteItem = dataNotes[index];
-                                  return ListTile(
-                                    title: Text(
-                                      "${noteItem.text}",
-                                      maxLines: 1,
-                                      softWrap: true,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  );
-                                },
-                              );
+                              return NotesListView(
+                                  notes: dataNotes,
+                                  onDeleteNote: (note) async {
+                                    await _noteService.deleteNote(id: note.id);
+                                  });
                             } else {
                               return const Text("No notes to show");
                             }
@@ -117,27 +113,4 @@ class _NotesViewState extends State<NotesView> {
               }
             }));
   }
-}
-
-Future<bool> showLogOutDialog(BuildContext context) {
-  return showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Log Out"),
-          content: const Text("Are you sure you want to //log out?"),
-          actions: [
-            TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(false);
-                },
-                child: const Text("Cancel")),
-            TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(true);
-                },
-                child: const Text("Log-Out")),
-          ],
-        );
-      }).then((value) => value ?? false);
 }

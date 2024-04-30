@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_foundamentals/constants/routes.dart';
 import 'package:flutter_foundamentals/services/auth/auth_exception.dart';
 import 'package:flutter_foundamentals/services/auth/auth_service.dart';
-import 'package:flutter_foundamentals/utils/show_error_dialog.dart';
+import 'package:flutter_foundamentals/utils/error_dialog.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -76,9 +76,9 @@ class _LoginViewState extends State<LoginView> {
                   Navigator.of(context)
                       .pushNamedAndRemoveUntil(homeRoute, (route) => false);
                 } on InvalidEmailException catch (_) {
-                  await showErrorDialog(context, "Invalid email");
+                  await showGenericErrorDialog(context, "Invalid email");
                 } on GenericAuthException catch (_) {
-                  await showErrorDialog(context, "Invalid credentials");
+                  await showGenericErrorDialog(context, "Invalid credentials");
                 }
               },
               child: const Text("Log In"),

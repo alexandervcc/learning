@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_foundamentals/constants/routes.dart';
 import 'package:flutter_foundamentals/services/auth/auth_exception.dart';
 import 'package:flutter_foundamentals/services/auth/auth_service.dart';
-import 'package:flutter_foundamentals/utils/show_error_dialog.dart';
+import 'package:flutter_foundamentals/utils/error_dialog.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -69,13 +69,13 @@ class _RegisterViewState extends State<RegisterView> {
                   await AuthService.firebase().sendEmailVerification();
                   Navigator.of(context).pushNamed(verifyEmailRoute);
                 } on WeakPasswordException catch (_) {
-                  await showErrorDialog(
+                  await showGenericErrorDialog(
                       context, "Weak password, use a new one");
                 } on EmailInUseException catch (_) {
-                  await showErrorDialog(
+                  await showGenericErrorDialog(
                       context, "Email you provided cannot be used");
                 } on GenericAuthException catch (e) {
-                  await showErrorDialog(context, "Error: $e");
+                  await showGenericErrorDialog(context, "Error: $e");
                 }
               },
               child: const Text("Register"),
