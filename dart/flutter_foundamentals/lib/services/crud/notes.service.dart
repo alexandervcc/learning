@@ -23,7 +23,7 @@ class NotesService extends DatabaseConnectionService {
 
   factory NotesService() => _instance;
 
-  Future<void> _cacheNotes() async {
+  Future<void> cacheNotes() async {
     final allNotes = await getAllNotes();
     _notes = allNotes.toList();
     _streamController.add(_notes);
@@ -31,7 +31,7 @@ class NotesService extends DatabaseConnectionService {
 
   Future<void> openDbConnection() async {
     await open();
-    await _cacheNotes();
+    await cacheNotes();
   }
 
   Future<DatabaseNote> updateNote({
@@ -69,8 +69,8 @@ class NotesService extends DatabaseConnectionService {
     await ensureDbIsOpen();
     final db = getDatabaseOrThrow();
     final notes = await db.query(noteTable);
-
-    return notes.map((noteRow) => DatabaseNote.fromRow(noteRow));
+    final notesMapped = notes.map((noteRow) => DatabaseNote.fromRow(noteRow));
+    return notesMapped;
   }
 
   Future<DatabaseNote> getNote({required int id}) async {

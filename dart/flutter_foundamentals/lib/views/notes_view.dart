@@ -26,6 +26,7 @@ class _NotesViewState extends State<NotesView> {
   void initState() {
     _userService = UserService();
     _noteService = NotesService();
+    _noteService.cacheNotes();
     super.initState();
   }
 
