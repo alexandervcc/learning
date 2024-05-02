@@ -36,7 +36,10 @@ class UserService extends DatabaseConnectionService {
     return _instance;
   }
 
-  Future<DatabaseUser> getOrCreateUser({required String email}) async {
+  Future<DatabaseUser> getOrCreateUser({
+    required String email,
+    bool setAsCurrentUser = true,
+  }) async {
     await ensureDbIsOpen();
     DatabaseUser user;
     try {

@@ -1,15 +1,28 @@
 import "dart:async";
+import "dart:developer";
 
 import "package:flutter_foundamentals/services/auth/auth_exception.dart";
 import "package:flutter_foundamentals/services/crud/db.service.dart";
 import "package:flutter_foundamentals/services/crud/exceptions.dart";
 import "package:flutter_foundamentals/services/crud/user.service.dart";
+import "package:flutter_foundamentals/utils/filter.dart";
 
 class NotesService extends DatabaseConnectionService {
   final UserService _userService;
-  List<DatabaseNote> _notes = [];
+  DatabaseUser? _currentUser;
   late final StreamController<List<DatabaseNote>> _streamController;
-  Stream<List<DatabaseNote>> get allNotes => _streamController.stream;
+
+  List<DatabaseNote> _notes = [];
+
+  Stream<List<DatabaseNote>> get allNotes =>
+      _streamController.stream.filter((note) {
+        final currentUser = _currentUser;
+        log("->notes.service::allNotes(stream)::filter::user: $currentUser");
+        if (currentUser == null) {
+          throw UserShouldBeSetBeforeReadingNotesException();
+        }
+        return note.userId == currentUser.id;
+      });
 
   NotesService._privateConstructor(this._userService) {
     _streamController =
@@ -32,6 +45,14 @@ class NotesService extends DatabaseConnectionService {
   Future<void> openDbConnection() async {
     await open();
     await cacheNotes();
+  }
+
+  Future<void> initializeUser(String email) async {
+    final currentUser = await _userService.getOrCreateUser(email: email);
+    log("->notes.service::initializeUser::email: $email");
+    log("->notes.service::initializeUser::currentUser $currentUser");
+
+    _currentUser = currentUser;
   }
 
   Future<DatabaseNote> updateNote({

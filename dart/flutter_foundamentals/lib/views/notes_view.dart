@@ -1,12 +1,9 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_foundamentals/constants/routes.dart';
 import 'package:flutter_foundamentals/enum/main_menu_action.dart';
 
 import 'package:flutter_foundamentals/services/auth/auth_service.dart';
 import 'package:flutter_foundamentals/services/crud/notes.service.dart';
-import 'package:flutter_foundamentals/services/crud/user.service.dart';
 import 'package:flutter_foundamentals/dialogs/logout_dialog.dart';
 import 'package:flutter_foundamentals/views/notes_list_view.dart';
 
@@ -19,12 +16,10 @@ class NotesView extends StatefulWidget {
 
 class _NotesViewState extends State<NotesView> {
   late final NotesService _noteService;
-  late final UserService _userService;
   String get userEmail => AuthService.firebase().currentUser!.email!;
 
   @override
   void initState() {
-    _userService = UserService();
     _noteService = NotesService();
     _noteService.cacheNotes();
     super.initState();
@@ -67,7 +62,7 @@ class _NotesViewState extends State<NotesView> {
           ],
         ),
         body: FutureBuilder(
-            future: _userService.getOrCreateUser(email: userEmail),
+            future: _noteService.initializeUser(userEmail),
             builder: (context, snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.none:
