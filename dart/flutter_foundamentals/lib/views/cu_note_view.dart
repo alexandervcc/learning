@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_foundamentals/dialogs/cannot_share_note_dialog.dart';
 import 'package:flutter_foundamentals/services/auth/auth_service.dart';
 import 'package:flutter_foundamentals/services/auth/auth_user.dart';
 // import 'package:flutter_foundamentals/services/crud/notes.service.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_foundamentals/services/auth/auth_user.dart';
 import 'package:flutter_foundamentals/services/firestore/firestore_storage.service.dart';
 import 'package:flutter_foundamentals/services/firestore/note.dart';
 import 'package:flutter_foundamentals/utils/get_argument.dart';
+import 'package:share_plus/share_plus.dart';
 
 class CUNoteView extends StatefulWidget {
   const CUNoteView({super.key});
@@ -96,6 +98,18 @@ class _CUNoteViewState extends State<CUNoteView> {
     return Scaffold(
         appBar: AppBar(
           title: const Text("New note"),
+          actions: [
+            IconButton(
+                onPressed: () async {
+                  final text = _textController.text;
+                  if (_note == null || text.isEmpty) {
+                    await showCannotShareDialog(context);
+                    return;
+                  }
+                  Share.share(text);
+                },
+                icon: const Icon(Icons.share))
+          ],
         ),
         body: FutureBuilder(
           future: _createOrGetExistingNote(context),
