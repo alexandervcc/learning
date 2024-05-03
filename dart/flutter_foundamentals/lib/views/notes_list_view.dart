@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_foundamentals/services/crud/notes.service.dart';
 import 'package:flutter_foundamentals/dialogs/delete_dialog.dart';
+import 'package:flutter_foundamentals/services/firestore/note.dart';
 
-typedef NoteCallback = void Function(DatabaseNote note);
+typedef NoteCallback = void Function(FirestoreNote note);
 
 class NotesListView extends StatelessWidget {
   const NotesListView({
@@ -12,7 +12,7 @@ class NotesListView extends StatelessWidget {
     required this.onTap,
   });
 
-  final List<DatabaseNote> notes;
+  final Iterable<FirestoreNote> notes;
   final NoteCallback onDeleteNote;
   final NoteCallback onTap;
 
@@ -21,11 +21,11 @@ class NotesListView extends StatelessWidget {
     return ListView.builder(
       itemCount: notes.length,
       itemBuilder: (context, index) {
-        final noteItem = notes[index];
+        final noteItem = notes.elementAt(index);
         return ListTile(
           onTap: () => onTap(noteItem),
           title: Text(
-            "${noteItem.text}",
+            noteItem.text,
             maxLines: 1,
             softWrap: true,
             overflow: TextOverflow.ellipsis,
