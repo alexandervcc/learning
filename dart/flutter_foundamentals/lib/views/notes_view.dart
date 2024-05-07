@@ -6,9 +6,13 @@ import 'package:flutter_foundamentals/enum/main_menu_action.dart';
 
 import 'package:flutter_foundamentals/services/auth/auth_service.dart';
 import 'package:flutter_foundamentals/dialogs/logout_dialog.dart';
+import 'package:flutter_foundamentals/services/auth/bloc/auth_bloc.dart';
+import 'package:flutter_foundamentals/services/auth/bloc/auth_event.dart';
 import 'package:flutter_foundamentals/services/firestore/firestore_storage.service.dart';
 import 'package:flutter_foundamentals/services/firestore/note.dart';
 import 'package:flutter_foundamentals/views/notes_list_view.dart';
+
+import "package:flutter_bloc/flutter_bloc.dart";
 
 class NotesView extends StatefulWidget {
   const NotesView({super.key});
@@ -48,9 +52,8 @@ class _NotesViewState extends State<NotesView> {
                   case MainMenuAction.logout:
                     final shouldLogOut = await showGenericLogoutDialog(context);
                     if (shouldLogOut) {
+                      context.read<AuthBloc>().add(const AuthEventLogOut());
                       await AuthService.firebase().logOut();
-                      Navigator.of(context).pushNamedAndRemoveUntil(
-                          loginRoute, (route) => false);
                     }
                   case MainMenuAction.newNote:
                     Navigator.of(context).pushNamed(cuNoteRoute);
@@ -63,9 +66,9 @@ class _NotesViewState extends State<NotesView> {
                         value: MainMenuAction.newNote, child: Text("New Note")),
                     const PopupMenuItem<MainMenuAction>(
                         value: MainMenuAction.logout, child: Text("Log-Out")),
-                        const PopupMenuItem<MainMenuAction>(
-                        value: MainMenuAction.blocCounter, child: Text("Counter Bloc")),
-                        
+                    const PopupMenuItem<MainMenuAction>(
+                        value: MainMenuAction.blocCounter,
+                        child: Text("Counter Bloc")),
                   ])
         ],
       ),

@@ -1,9 +1,12 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_foundamentals/constants/routes.dart';
 import 'package:flutter_foundamentals/services/auth/auth_exception.dart';
 import 'package:flutter_foundamentals/services/auth/auth_service.dart';
 import 'package:flutter_foundamentals/dialogs/error_dialog.dart';
+import 'package:flutter_foundamentals/services/auth/bloc/auth_bloc.dart';
+import 'package:flutter_foundamentals/services/auth/bloc/auth_event.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -58,29 +61,11 @@ class _LoginViewState extends State<LoginView> {
               ),
             ),
             TextButton(
-              onPressed: () async {
-                final email = _email.text;
-                final password = _password.text;
-                try {
-                  await AuthService.firebase().logIn(
-                    email: email,
-                    password: password,
-                  );
-                  final user = AuthService.firebase().currentUser;
-                  log("LoggedIn user: $user");
-                  if (!(user?.isEmailVerified ?? false)) {
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                        verifyEmailRoute, (route) => false);
-                    return;
-                  }
-                  Navigator.of(context)
-                      .pushNamedAndRemoveUntil(homeRoute, (route) => false);
-                } on InvalidEmailException catch (_) {
-                  await showGenericErrorDialog(context, "Invalid email");
-                } on GenericAuthException catch (_) {
-                  await showGenericErrorDialog(context, "Invalid credentials");
-                }
-              },
+              onPressed: () => blocHandleLogIn(
+                context: context,
+                email: _email.text,
+                password: _password.text,
+              ),
               child: const Text("Log In"),
             ),
             TextButton(
@@ -92,5 +77,48 @@ class _LoginViewState extends State<LoginView> {
                 child: const Text("Sign-Up here"))
           ],
         ));
+  }
+}
+
+Future<void> blocHandleLogIn({
+  required BuildContext context,
+  required String email,
+  required String password,
+}) async {
+  try {
+    context
+        .read<AuthBloc>()
+        .add(AuthEventLogIn(email: email, password: password));
+  } on InvalidEmailException catch (_) {
+    await showGenericErrorDialog(context, "Invalid email");
+  } on GenericAuthException catch (_) {
+    await showGenericErrorDialog(context, "Invalid credentials");
+  }
+}
+
+/// Old error dialog
+@Deprecated('Use [HomePage]')
+Future<void> handleLogIn({
+  required BuildContext context,
+  required String email,
+  required String password,
+}) async {
+  try {
+    await AuthService.firebase().logIn(
+      email: email,
+      password: password,
+    );
+    final user = AuthService.firebase().currentUser;
+    log("LoggedIn user: $user");
+    if (!(user?.isEmailVerified ?? false)) {
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil(verifyEmailRoute, (route) => false);
+      return;
+    }
+    Navigator.of(context).pushNamedAndRemoveUntil(homeRoute, (route) => false);
+  } on InvalidEmailException catch (_) {
+    await showGenericErrorDialog(context, "Invalid email");
+  } on GenericAuthException catch (_) {
+    await showGenericErrorDialog(context, "Invalid credentials");
   }
 }

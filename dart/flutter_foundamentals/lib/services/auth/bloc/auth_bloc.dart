@@ -3,7 +3,7 @@ import 'package:flutter_foundamentals/services/auth/auth_provider.dart';
 import 'package:flutter_foundamentals/services/auth/bloc/auth_event.dart';
 import 'package:flutter_foundamentals/services/auth/bloc/auth_state.dart';
 
-class AuthBloc extends Bloc<AuthEvent, AuthState> {
+class AuthBloc extends Bloc<AuthBlocEvent, AuthBlocState> {
   AuthBloc(AuthProvider provider) : super(const AuthStateLoading()) {
     on<AuthEventInitialize>((event, emit) async {
       await provider.initializeApp();

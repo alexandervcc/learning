@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_foundamentals/constants/routes.dart';
 import 'package:flutter_foundamentals/services/auth/auth_service.dart';
+import 'package:flutter_foundamentals/services/auth/bloc/auth_bloc.dart';
+import 'package:flutter_foundamentals/services/auth/bloc/auth_event.dart';
+import 'package:flutter_foundamentals/services/auth/bloc/auth_state.dart';
 import 'package:flutter_foundamentals/views/counter_view.dart';
 import 'package:flutter_foundamentals/views/login_view.dart';
 import 'package:flutter_foundamentals/views/cu_note_view.dart';
@@ -18,7 +22,11 @@ void main() {
       colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       useMaterial3: true,
     ),
-    home: const HomePage(),
+    // BlocProvider will make the bloc available to the widgets inside the tree
+    home: BlocProvider<AuthBloc>(
+      create: (context) => AuthBloc(AuthService.firebase()),
+      child: const HomePage(),
+    ),
     // create named routes
     routes: {
       loginRoute: (context) => const LoginView(),
@@ -26,7 +34,7 @@ void main() {
       homeRoute: (context) => const NotesView(),
       verifyEmailRoute: (context) => const VerifyEmailView(),
       cuNoteRoute: (context) => const CUNoteView(),
-      counterBlocRoute:(context) => const BlocCounterView()
+      counterBlocRoute: (context) => const BlocCounterView()
     },
   ));
 }
@@ -34,6 +42,37 @@ void main() {
 /// Stateless widget to initialize Firebase Auth
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    context.read<AuthBloc>().add(const AuthEventInitialize());
+
+    return BlocBuilder<AuthBloc, AuthBlocState>(builder: (context, state) {
+      if (state is AuthStateNeedsVerification) {
+        devtools.log(
+            'HomePage::User still needs verification, showing Email Verification view');
+        return const VerifyEmailView();
+      }
+
+      if (state is AuthStateLoggedOut) {
+        devtools.log('HomePage::No user yet, showing Log-In view');
+        return const LoginView();
+      }
+
+      if (state is AuthStateLoggedIn) {
+        devtools.log("HomePage::User logged into the application");
+        return const NotesView();
+      }
+
+      return const CircularProgressIndicator();
+    });
+  }
+}
+
+/// Old error dialog
+@Deprecated('Use [HomePage]')
+class HomePageWithoutBloc extends StatelessWidget {
+  const HomePageWithoutBloc({super.key});
 
   @override
   Widget build(BuildContext context) {

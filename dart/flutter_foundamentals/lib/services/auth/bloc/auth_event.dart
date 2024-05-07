@@ -1,15 +1,15 @@
 import 'package:flutter/foundation.dart';
 
 @immutable
-abstract class AuthEvent {
-  const AuthEvent();
+abstract class AuthBlocEvent {
+  const AuthBlocEvent();
 }
 
-class AuthEventInitialize extends AuthEvent {
+class AuthEventInitialize extends AuthBlocEvent {
   const AuthEventInitialize();
 }
 
-class AuthEventLogIn extends AuthEvent {
+class AuthEventLogIn extends AuthBlocEvent {
   final String email;
   final String password;
 
@@ -19,6 +19,6 @@ class AuthEventLogIn extends AuthEvent {
   });
 }
 
-class AuthEventLogOut extends AuthEvent {
+class AuthEventLogOut extends AuthBlocEvent {
   const AuthEventLogOut();
 }
