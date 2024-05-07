@@ -3,3 +3,4 @@ const signupRoute = '/sign-up/';
 const homeRoute = '/home/';
 const verifyEmailRoute = '/verify-email/';
 const cuNoteRoute = '/create_update-note/';
+const counterBlocRoute = '/bloc-counter-route/';

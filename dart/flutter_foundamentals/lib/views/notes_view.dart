@@ -54,6 +54,8 @@ class _NotesViewState extends State<NotesView> {
                     }
                   case MainMenuAction.newNote:
                     Navigator.of(context).pushNamed(cuNoteRoute);
+                  case MainMenuAction.blocCounter:
+                    Navigator.of(context).pushNamed(counterBlocRoute);
                 }
               },
               itemBuilder: (context) => [
@@ -61,6 +63,9 @@ class _NotesViewState extends State<NotesView> {
                         value: MainMenuAction.newNote, child: Text("New Note")),
                     const PopupMenuItem<MainMenuAction>(
                         value: MainMenuAction.logout, child: Text("Log-Out")),
+                        const PopupMenuItem<MainMenuAction>(
+                        value: MainMenuAction.blocCounter, child: Text("Counter Bloc")),
+                        
                   ])
         ],
       ),

@@ -18,15 +18,15 @@ void main() {
       colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       useMaterial3: true,
     ),
-    // home: const HomePage(),
-    home: const BlocCounterView(),
+    home: const HomePage(),
     // create named routes
     routes: {
       loginRoute: (context) => const LoginView(),
       signupRoute: (context) => const RegisterView(),
       homeRoute: (context) => const NotesView(),
       verifyEmailRoute: (context) => const VerifyEmailView(),
-      cuNoteRoute: (context) => const CUNoteView()
+      cuNoteRoute: (context) => const CUNoteView(),
+      counterBlocRoute:(context) => const BlocCounterView()
     },
   ));
 }
