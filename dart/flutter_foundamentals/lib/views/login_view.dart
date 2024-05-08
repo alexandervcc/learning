@@ -7,6 +7,7 @@ import 'package:flutter_foundamentals/services/auth/auth_service.dart';
 import 'package:flutter_foundamentals/dialogs/error_dialog.dart';
 import 'package:flutter_foundamentals/services/auth/bloc/auth_bloc.dart';
 import 'package:flutter_foundamentals/services/auth/bloc/auth_event.dart';
+import 'package:flutter_foundamentals/services/auth/bloc/auth_state.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -60,13 +61,30 @@ class _LoginViewState extends State<LoginView> {
                 hintText: "password",
               ),
             ),
-            TextButton(
-              onPressed: () => blocHandleLogIn(
-                context: context,
-                email: _email.text,
-                password: _password.text,
+            BlocListener<AuthBloc, AuthBlocState>(
+              listener: (context, state) async {
+                log("login_view::BlocListener::state $state");
+                if (state is AuthStateLoggedOut) {
+                  log("login_view::BlocListener::state.exception: ${state.exception}");
+                  if (state.exception is UserNotFoundException) {
+                    await showGenericErrorDialog(context, "User not found.");
+                  } else if (state.exception is InvalidEmailException) {
+                    await showGenericErrorDialog(
+                        context, "Email is malformed.");
+                  } else {
+                    await showGenericErrorDialog(
+                        context, "Invalid credentials.");
+                  }
+                }
+              },
+              child: TextButton(
+                onPressed: () => blocHandleLogIn(
+                  context: context,
+                  email: _email.text,
+                  password: _password.text,
+                ),
+                child: const Text("Log In"),
               ),
-              child: const Text("Log In"),
             ),
             TextButton(
                 onPressed: () {
@@ -84,20 +102,13 @@ Future<void> blocHandleLogIn({
   required BuildContext context,
   required String email,
   required String password,
-}) async {
-  try {
+}) async =>
     context
         .read<AuthBloc>()
         .add(AuthEventLogIn(email: email, password: password));
-  } on InvalidEmailException catch (_) {
-    await showGenericErrorDialog(context, "Invalid email");
-  } on GenericAuthException catch (_) {
-    await showGenericErrorDialog(context, "Invalid credentials");
-  }
-}
 
 /// Old error dialog
-@Deprecated('Use [HomePage]')
+@Deprecated('Use [blocHandleLogIn]')
 Future<void> handleLogIn({
   required BuildContext context,
   required String email,
