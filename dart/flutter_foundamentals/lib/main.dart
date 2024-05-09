@@ -10,7 +10,7 @@ import 'package:flutter_foundamentals/views/login_view.dart';
 import 'package:flutter_foundamentals/views/cu_note_view.dart';
 import 'package:flutter_foundamentals/views/notes_view.dart';
 import 'package:flutter_foundamentals/views/register_view.dart';
-import 'package:flutter_foundamentals/views/verify_email.dart';
+import 'package:flutter_foundamentals/views/verify_email_view.dart';
 // import only log from the package and use an alias
 import 'dart:developer' as devtools show log;
 
@@ -29,10 +29,12 @@ void main() {
     ),
     // create named routes
     routes: {
+      /*
       loginRoute: (context) => const LoginView(),
       signupRoute: (context) => const RegisterView(),
       homeRoute: (context) => const NotesView(),
       verifyEmailRoute: (context) => const VerifyEmailView(),
+      */
       cuNoteRoute: (context) => const CUNoteView(),
       counterBlocRoute: (context) => const BlocCounterView()
     },
@@ -50,21 +52,31 @@ class HomePage extends StatelessWidget {
     return BlocBuilder<AuthBloc, AuthBlocState>(builder: (context, state) {
       if (state is AuthStateNeedsVerification) {
         devtools.log(
-            'HomePage::User still needs verification, showing Email Verification view');
+            'HomePage::BlocBuilder::builder: User still needs verification, showing Email Verification view');
         return const VerifyEmailView();
       }
 
       if (state is AuthStateLoggedOut) {
-        devtools.log('HomePage::No user yet, showing Log-In view');
+        devtools.log(
+            'HomePage::BlocBuilder::builder: No user yet, showing Log-In view');
         return const LoginView();
       }
 
       if (state is AuthStateLoggedIn) {
-        devtools.log("HomePage::User logged into the application");
+        devtools.log(
+            "HomePage::BlocBuilder::builder: User logged into the application");
         return const NotesView();
       }
 
-      return const CircularProgressIndicator();
+      if (state is AuthStateRegistering) {
+        devtools.log("HomePage::BlocBuilder::builder: Register new user");
+        return const RegisterView();
+      }
+
+      devtools.log("HomePage::BlocBuilder::builder: default CircularProgress");
+      return const Scaffold(
+        body: CircularProgressIndicator(),
+      );
     });
   }
 }

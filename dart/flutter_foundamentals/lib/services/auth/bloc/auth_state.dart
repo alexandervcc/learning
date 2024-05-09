@@ -1,13 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_foundamentals/services/auth/auth_user.dart';
+import 'package:equatable/equatable.dart';
 
 @immutable
 abstract class AuthBlocState {
   const AuthBlocState();
-}
-
-class AuthStateLoading extends AuthBlocState {
-  const AuthStateLoading();
 }
 
 class AuthStateLoggedIn extends AuthBlocState {
@@ -20,12 +17,25 @@ class AuthStateNeedsVerification extends AuthBlocState {
   const AuthStateNeedsVerification();
 }
 
-class AuthStateLoggedOut extends AuthBlocState {
+class AuthStateLoggedOut extends AuthBlocState with EquatableMixin {
   final Exception? exception;
-  const AuthStateLoggedOut(this.exception);
+  final bool isLoading;
+  const AuthStateLoggedOut({
+    this.exception,
+    required this.isLoading,
+  });
+
+  @override
+  List<Object?> get props => [exception, isLoading];
 }
 
-class AuthStateLogoutFailure extends AuthBlocState {
-  final Exception exception;
-  const AuthStateLogoutFailure(this.exception);
+class AuthStateUninitialized extends AuthBlocState {
+  const AuthStateUninitialized();
+}
+
+class AuthStateRegistering extends AuthBlocState {
+  final Exception? exception;
+  const AuthStateRegistering({
+    this.exception,
+  });
 }

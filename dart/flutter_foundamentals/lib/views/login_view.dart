@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_foundamentals/constants/routes.dart';
+import 'package:flutter_foundamentals/dialogs/loading_dialog.dart';
 import 'package:flutter_foundamentals/services/auth/auth_exception.dart';
 import 'package:flutter_foundamentals/services/auth/auth_service.dart';
 import 'package:flutter_foundamentals/dialogs/error_dialog.dart';
@@ -21,6 +22,7 @@ class _LoginViewState extends State<LoginView> {
   late final TextEditingController _email;
   late final TextEditingController _password;
   // late: same as lateinit on kotlin
+  CloseDialog? _closeDialogHandle;
 
   @override
   void initState() {
@@ -38,98 +40,78 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text("Log-In"),
-          backgroundColor: Colors.amber,
-        ),
-        body: Column(
-          children: [
-            TextField(
-              controller: _email,
-              enableSuggestions: false,
-              autocorrect: false,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(hintText: "email"),
-            ),
-            TextField(
-              controller: _password,
-              obscureText: true,
-              enableSuggestions: false,
-              autocorrect: false,
-              decoration: const InputDecoration(
-                hintText: "password",
+    log("login_view::build::context: $context");
+    return BlocListener<AuthBloc, AuthBlocState>(
+      listener: (context, state) async {
+        log("login_view::BlocListener::state $state");
+        if (state is AuthStateLoggedOut) {
+          log("login_view::BlocListener::state.exception: ${state.exception}");
+          final closeDialog = _closeDialogHandle;
+
+          if (!state.isLoading && closeDialog != null) {
+            closeDialog();
+            _closeDialogHandle = null;
+          } else if (state.isLoading && closeDialog == null) {
+            _closeDialogHandle = showLoadingDialog(
+              context: context,
+              text: "Loading...",
+            );
+          }
+
+          if (state.exception != null) {
+            if (state.exception is UserNotFoundException) {
+              await showGenericErrorDialog(context, "User not found.");
+            } else if (state.exception is InvalidEmailException) {
+              await showGenericErrorDialog(context, "Email is malformed.");
+            } else {
+              await showGenericErrorDialog(context, "Invalid credentials.");
+            }
+          }
+        }
+      },
+      child: Scaffold(
+          appBar: AppBar(
+            title: const Text("Log-In"),
+            backgroundColor: Colors.amber,
+          ),
+          body: Column(
+            children: [
+              TextField(
+                controller: _email,
+                enableSuggestions: false,
+                autocorrect: false,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(hintText: "email"),
               ),
-            ),
-            BlocListener<AuthBloc, AuthBlocState>(
-              listener: (context, state) async {
-                log("login_view::BlocListener::state $state");
-                if (state is AuthStateLoggedOut) {
-                  log("login_view::BlocListener::state.exception: ${state.exception}");
-                  if (state.exception is UserNotFoundException) {
-                    await showGenericErrorDialog(context, "User not found.");
-                  } else if (state.exception is InvalidEmailException) {
-                    await showGenericErrorDialog(
-                        context, "Email is malformed.");
-                  } else {
-                    await showGenericErrorDialog(
-                        context, "Invalid credentials.");
-                  }
-                }
-              },
-              child: TextButton(
-                onPressed: () => blocHandleLogIn(
-                  context: context,
-                  email: _email.text,
-                  password: _password.text,
+              TextField(
+                controller: _password,
+                obscureText: true,
+                enableSuggestions: false,
+                autocorrect: false,
+                decoration: const InputDecoration(
+                  hintText: "password",
                 ),
+              ),
+              TextButton(
+                onPressed: () {
+                  context.read<AuthBloc>().add(AuthEventLogIn(
+                        email: _email.text,
+                        password: _password.text,
+                      ));
+                },
                 child: const Text("Log In"),
               ),
-            ),
-            TextButton(
-                onPressed: () {
-                  // Navigator: with named route
-                  Navigator.of(context)
-                      .pushNamedAndRemoveUntil(signupRoute, (route) => false);
-                },
-                child: const Text("Sign-Up here"))
-          ],
-        ));
-  }
-}
-
-Future<void> blocHandleLogIn({
-  required BuildContext context,
-  required String email,
-  required String password,
-}) async =>
-    context
-        .read<AuthBloc>()
-        .add(AuthEventLogIn(email: email, password: password));
-
-/// Old error dialog
-@Deprecated('Use [blocHandleLogIn]')
-Future<void> handleLogIn({
-  required BuildContext context,
-  required String email,
-  required String password,
-}) async {
-  try {
-    await AuthService.firebase().logIn(
-      email: email,
-      password: password,
+              TextButton(
+                  onPressed: () {
+                    // Navigator: with named route
+                    // Navigator.of(context).pushNamedAndRemoveUntil(signupRoute, (route) => false);
+                    context
+                        .read<AuthBloc>()
+                        .add(const AuthEventShoulRegister());
+                  },
+                  child: const Text("Sign-Up here"))
+            ],
+          )),
     );
-    final user = AuthService.firebase().currentUser;
-    log("LoggedIn user: $user");
-    if (!(user?.isEmailVerified ?? false)) {
-      Navigator.of(context)
-          .pushNamedAndRemoveUntil(verifyEmailRoute, (route) => false);
-      return;
-    }
-    Navigator.of(context).pushNamedAndRemoveUntil(homeRoute, (route) => false);
-  } on InvalidEmailException catch (_) {
-    await showGenericErrorDialog(context, "Invalid email");
-  } on GenericAuthException catch (_) {
-    await showGenericErrorDialog(context, "Invalid credentials");
   }
 }
