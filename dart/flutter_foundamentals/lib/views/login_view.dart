@@ -1,10 +1,8 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_foundamentals/constants/routes.dart';
 import 'package:flutter_foundamentals/dialogs/loading_dialog.dart';
 import 'package:flutter_foundamentals/services/auth/auth_exception.dart';
-import 'package:flutter_foundamentals/services/auth/auth_service.dart';
 import 'package:flutter_foundamentals/dialogs/error_dialog.dart';
 import 'package:flutter_foundamentals/services/auth/bloc/auth_bloc.dart';
 import 'package:flutter_foundamentals/services/auth/bloc/auth_event.dart';
@@ -20,9 +18,8 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   //Proxy to obtain a single store for text across children components
   late final TextEditingController _email;
-  late final TextEditingController _password;
   // late: same as lateinit on kotlin
-  CloseDialog? _closeDialogHandle;
+  late final TextEditingController _password;
 
   @override
   void initState() {
@@ -46,18 +43,6 @@ class _LoginViewState extends State<LoginView> {
         log("login_view::BlocListener::state $state");
         if (state is AuthStateLoggedOut) {
           log("login_view::BlocListener::state.exception: ${state.exception}");
-          final closeDialog = _closeDialogHandle;
-
-          if (!state.isLoading && closeDialog != null) {
-            closeDialog();
-            _closeDialogHandle = null;
-          } else if (state.isLoading && closeDialog == null) {
-            _closeDialogHandle = showLoadingDialog(
-              context: context,
-              text: "Loading...",
-            );
-          }
-
           if (state.exception != null) {
             if (state.exception is UserNotFoundException) {
               await showGenericErrorDialog(context, "User not found.");

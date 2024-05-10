@@ -5,6 +5,7 @@ import 'package:flutter_foundamentals/services/auth/auth_service.dart';
 import 'package:flutter_foundamentals/services/auth/bloc/auth_bloc.dart';
 import 'package:flutter_foundamentals/services/auth/bloc/auth_event.dart';
 import 'package:flutter_foundamentals/services/auth/bloc/auth_state.dart';
+import 'package:flutter_foundamentals/utils/loading/loading_screen.dart';
 import 'package:flutter_foundamentals/views/counter_view.dart';
 import 'package:flutter_foundamentals/views/login_view.dart';
 import 'package:flutter_foundamentals/views/cu_note_view.dart';
@@ -49,7 +50,16 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     context.read<AuthBloc>().add(const AuthEventInitialize());
 
-    return BlocBuilder<AuthBloc, AuthBlocState>(builder: (context, state) {
+    return BlocConsumer<AuthBloc, AuthBlocState>(listener: (context, state) {
+      if (state.isLoading) {
+        LoadingScreen().show(
+          context: context,
+          text: state.loadingText ?? "Please wait a moment.",
+        );
+      } else {
+        LoadingScreen().hide();
+      }
+    }, builder: (context, state) {
       if (state is AuthStateNeedsVerification) {
         devtools.log(
             'HomePage::BlocBuilder::builder: User still needs verification, showing Email Verification view');
