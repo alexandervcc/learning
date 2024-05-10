@@ -7,6 +7,7 @@ import 'package:flutter_foundamentals/services/auth/bloc/auth_event.dart';
 import 'package:flutter_foundamentals/services/auth/bloc/auth_state.dart';
 import 'package:flutter_foundamentals/utils/loading/loading_screen.dart';
 import 'package:flutter_foundamentals/views/counter_view.dart';
+import 'package:flutter_foundamentals/views/forgot_password.view.dart';
 import 'package:flutter_foundamentals/views/login_view.dart';
 import 'package:flutter_foundamentals/views/cu_note_view.dart';
 import 'package:flutter_foundamentals/views/notes_view.dart';
@@ -50,44 +51,53 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     context.read<AuthBloc>().add(const AuthEventInitialize());
 
-    return BlocConsumer<AuthBloc, AuthBlocState>(listener: (context, state) {
-      if (state.isLoading) {
-        LoadingScreen().show(
-          context: context,
-          text: state.loadingText ?? "Please wait a moment.",
+    return BlocConsumer<AuthBloc, AuthBlocState>(
+      listener: (context, state) {
+        if (state.isLoading) {
+          LoadingScreen().show(
+            context: context,
+            text: state.loadingText ?? "Please wait a moment.",
+          );
+        } else {
+          LoadingScreen().hide();
+        }
+      },
+      builder: (context, state) {
+        if (state is AuthStateNeedsVerification) {
+          devtools.log(
+              'HomePage::BlocBuilder::builder: User still needs verification, showing Email Verification view');
+          return const VerifyEmailView();
+        }
+
+        if (state is AuthStateLoggedOut) {
+          devtools.log(
+              'HomePage::BlocBuilder::builder: No user yet, showing Log-In view');
+          return const LoginView();
+        }
+
+        if (state is AuthStateLoggedIn) {
+          devtools.log(
+              "HomePage::BlocBuilder::builder: User logged into the application");
+          return const NotesView();
+        }
+
+        if (state is AuthStateRegistering) {
+          devtools.log("HomePage::BlocBuilder::builder: Register new user");
+          return const RegisterView();
+        }
+
+        if (state is AuthStateForgotPassword) {
+          devtools.log("HomePage::BlocBuilder::builder: User Forgot Password");
+          return const ForgotPasswordView();
+        }
+
+        devtools
+            .log("HomePage::BlocBuilder::builder: default CircularProgress");
+        return const Scaffold(
+          body: CircularProgressIndicator(),
         );
-      } else {
-        LoadingScreen().hide();
-      }
-    }, builder: (context, state) {
-      if (state is AuthStateNeedsVerification) {
-        devtools.log(
-            'HomePage::BlocBuilder::builder: User still needs verification, showing Email Verification view');
-        return const VerifyEmailView();
-      }
-
-      if (state is AuthStateLoggedOut) {
-        devtools.log(
-            'HomePage::BlocBuilder::builder: No user yet, showing Log-In view');
-        return const LoginView();
-      }
-
-      if (state is AuthStateLoggedIn) {
-        devtools.log(
-            "HomePage::BlocBuilder::builder: User logged into the application");
-        return const NotesView();
-      }
-
-      if (state is AuthStateRegistering) {
-        devtools.log("HomePage::BlocBuilder::builder: Register new user");
-        return const RegisterView();
-      }
-
-      devtools.log("HomePage::BlocBuilder::builder: default CircularProgress");
-      return const Scaffold(
-        body: CircularProgressIndicator(),
-      );
-    });
+      },
+    );
   }
 }
 

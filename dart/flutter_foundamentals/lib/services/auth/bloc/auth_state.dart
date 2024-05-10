@@ -49,3 +49,14 @@ class AuthStateRegistering extends AuthBlocState {
     super.isLoading,
   });
 }
+
+class AuthStateForgotPassword extends AuthBlocState {
+  final Exception? exception;
+  final bool hasSentEmail;
+
+  const AuthStateForgotPassword({
+    super.isLoading,
+    required this.hasSentEmail,
+    this.exception,
+  });
+}

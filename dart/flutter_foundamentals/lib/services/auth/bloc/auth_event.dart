@@ -40,3 +40,11 @@ class AuthEventRegister extends AuthBlocEvent {
 class AuthEventShoulRegister extends AuthBlocEvent {
   const AuthEventShoulRegister();
 }
+
+class AuthEventForgotPassword extends AuthBlocEvent {
+  final String? email;
+
+  const AuthEventForgotPassword({
+    this.email
+  });
+}
