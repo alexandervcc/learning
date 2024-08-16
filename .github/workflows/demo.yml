@@ -1,0 +1,40 @@
+name: GitHub Actions Demo
+run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+on: [push]
+jobs:
+  Explore-GitHub-Actions:
+    runs-on: ubuntu-latest
+    outputs:
+      xd: ${{ steps.xd-output-step.outputs.xd }}
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      - name: List files in the repository
+        run: |
+          ls ${{ github.workspace }}
+      - run: echo "🍏 This job's status is ${{ job.status }}."
+  Cheems-Job:
+    runs-on: ubuntu-latest
+    needs: [Explore-GitHub-Actions]
+    steps:
+      - name: Retrieve secret
+        env:
+          CHEEMS_SECRET: ${{ secrets.CHEEMS }}
+        run: |
+          echo "S_DOG=${CHEEMS_SECRET}-doge" >> $GITHUB_ENV
+          echo "The secret from github is: ${{ secrets.CHEEMS }} -> $CHEEMS_SECRET"
+      - name: Print the value from Job 1
+        run: | 
+          echo "Value from previous job: -> ${{ needs.Explore-GitHub-Actions.outputs.xd }}"
+      - name: Set a value for later step
+        id: job2-value
+        run: echo "DOG=shiba" >> $GITHUB_ENV
+      - name: Use the value in a subsequent step
+        run: |
+          echo "Value is: $DOG"
+          echo "S Value is: $S_DOG"
