@@ -1,0 +1,14 @@
+vars:
+  stage: dev
+
+import:
+  - catalog/station
+
+components:
+  terraform:
+    myapp:
+      metadata:
+        component: weather
+      vars:
+        location: Stockholm
+        lang: se
