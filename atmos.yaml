@@ -1,4 +1,4 @@
-base_path: "./atmos"
+base_path: "atmos"
 
 components:
   terraform:
@@ -7,7 +7,7 @@ components:
     deploy_run_init: true
     init_run_reconfigure: true
     auto_generate_backend_file: false
-
+  
 stacks:
   base_path: "stacks"
   included_paths:
@@ -17,5 +17,5 @@ stacks:
   name_pattern: "{stage}"
 
 logs:
-  file: "dev/stderr"
+  file: "/dev/stderr"
   level: Info
