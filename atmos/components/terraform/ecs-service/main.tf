@@ -1,3 +1,7 @@
+provider "aws" {
+  region = "us-east-2"  # Replace with your AWS region
+}
+
 # ECS Service
 resource "aws_ecs_service" "this" {
   name            = "${var.environment}-service"

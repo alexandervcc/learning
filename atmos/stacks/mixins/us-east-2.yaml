@@ -1,0 +1,6 @@
+vars:
+  region: us-east-2   # the canonical cloud region
+  availability_zones: # the designated availability zones to use in this region
+  - us-east-2a
+  - us-east-2b
+  - us-east-2c
