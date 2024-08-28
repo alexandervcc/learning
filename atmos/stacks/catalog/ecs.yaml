@@ -1,0 +1,11 @@
+components:
+  terraform:
+    ecs:
+      metadata:
+        component: ecs-service
+      vars:
+        environment: "qa"
+        task_definition: ""
+        desired_count: 0
+        subnets:
+        security_group_id: ""

@@ -1,0 +1,21 @@
+vars:
+  stage: qa
+
+import:
+  - catalog/ecs
+
+components:
+  terraform:
+    ecs:
+      vars:
+        environment: "qa"
+        desired_count: 2
+        task_definition: "arn:aws:ecs:us-east-2:905418244733:task-definition/ecs-task--user-micro:1"
+        security_group_id: "sg-0a0307d15b1b96b37" # Replace with your actual Security Group ID
+        subnets:
+          - "subnet-0b33f652915bb47c4"  # Replace with your actual Subnet IDs
+          - "subnet-014e89ee346b76b2f"
+        # region: "us-east-1"
+        # container_name: "app-container"
+        # container_port: 8081
+        # vpc_id: "vpc-0879e7786645465cf" # Replace with your actual VPC ID
