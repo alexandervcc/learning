@@ -20,8 +20,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Atmos Plan
-        uses: cloudposse/github-action-atmos-terraform-plan@v1
+        uses: cloudposse/github-action-atmos-terraform-plan@v2
         with:
           component: "ecs"
           stack: ${{ github.event.inputs.environment }}
           atmos-version: 1.81.0
+          atmos-config-path: ./rootfs/usr/local/etc/atmos/

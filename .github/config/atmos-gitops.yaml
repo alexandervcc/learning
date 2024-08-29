@@ -1,0 +1,7 @@
+atmos-config-path: ./rootfs/usr/local/etc/atmos/
+atmos-version: 1.65.0
+aws-region: us-east-2
+enable-infracost: false
+group-by: .stack_slug | split("-") | [.[0], .[2]] | join("-")
+sort-by: .stack_slug
+terraform-version: 1.65.0
