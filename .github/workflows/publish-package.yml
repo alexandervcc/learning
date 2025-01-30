@@ -26,11 +26,11 @@ jobs:
         working-directory: node/testing
         run: |
           pnpm list
-      - name: Run Build
+      - name: Generate client
         working-directory: node/testing
         run: |
-          pnpm run build:client
-      - name: Run Publish
+          pnpm run openapi-ts && pnpm run build:client
+      - name: Publish to NPM
         working-directory: node/testing
         run: |
           pnpm run publish:client
