@@ -1,0 +1,73 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/": {
+      "post": {
+        "operationId": "AppController_getHello",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppReqDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The message was successfully returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppResDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "NestJs tests",
+    "description": "NestJs tests API description",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "AppReqDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the user",
+            "example": "Mijotron"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "AppResDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Message to the user"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      }
+    }
+  }
+}
